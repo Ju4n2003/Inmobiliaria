@@ -4,17 +4,10 @@ defmodule Inmobiliaria.Propiedad do
   end
 
   def obtener_estado(pid) do
-
-    #tupla para obtener el estado, con self() porque
-    #el proceso necesita saber a quién enviar la respuesta,
-    #entonces enviamos el emnsaje y quién lo pidió
-
     send(pid, {:obtener_estado, self()})
 
-    #ESTE proceso queda esperando respuesta
     receive do
-      #lo guarda el propiedad y retorna una propiedad
-      propiedad -> propiedad
+      estado -> estado
     end
   end
 
@@ -24,23 +17,27 @@ defmodule Inmobiliaria.Propiedad do
 
   def loop(propiedad) do
     receive do
-      #si llega una tupla así: {:obtener_estado, "algo"},
-      #entonces, "algo" se guarda en remitente.
       {:obtener_estado, remitente} ->
-        send(remitente, propiedad) #le responde al proceso que preguntó. Le manda el mapa completo
+        send(remitente, propiedad)
 
-        loop(propiedad) #para que el proceso no muera, sino que siga esperando mensajes
+        loop(propiedad)
 
       {:comprar, cliente} ->
         if propiedad.disponibilidad == "disponible" do
-          nueva_propiedad = %{
-            propiedad |
-            disponibilidad: "vendida"
+          nuevo_estado = %{
+            propiedad
+            | disponibilidad: "vendida"
           }
+
+          Inmobiliaria.Persistencia.guardar_resultado(
+            cliente,
+            nuevo_estado,
+            "compra"
+          )
 
           IO.puts("#{cliente} compró la propiedad")
 
-          loop(nueva_propiedad) #el rpoceso continúa pero con el estado actualizado
+          loop(nuevo_estado)
         else
           IO.puts("La propiedad no está disponible")
 

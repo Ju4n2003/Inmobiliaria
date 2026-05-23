@@ -62,10 +62,19 @@ defmodule Inmobiliaria.PropertyManager do
       {:crear_propiedad, datos_propiedad} ->
 
         id_propiedad = "prop00#{estado.contador}"
-        datos_completos = Map.put(datos_propiedad,:id,id_propiedad)
-        pid_propiedad = Inmobiliaria.Propiedad.iniciar(datos_completos)
-        nuevas_propiedades = Map.put(estado.propiedades,id_propiedad,pid_propiedad)
-        nuevo_estado = %{propiedades: nuevas_propiedades,contador: estado.contador + 1}
+        propiedad_completa = Map.put(datos_propiedad,:id,id_propiedad)
+        pid_propiedad = Inmobiliaria.Propiedad.iniciar(propiedad_completa)
+
+        Inmobiliaria.Persistencia.guardar_propiedad(propiedad_completa)
+        nuevas_propiedades = Map.put(
+              estado.propiedades,
+              id_propiedad,
+              pid_propiedad)
+
+        nuevo_estado = %{
+          propiedades: nuevas_propiedades,
+          contador: estado.contador + 1
+        }
 
         IO.puts("Propiedad #{id_propiedad} registrada")
         loop(nuevo_estado)
