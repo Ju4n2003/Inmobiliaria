@@ -11,9 +11,17 @@ defmodule Inmobiliaria.MixProject do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
-    [extra_applications: [:logger],mod: {Inmobiliaria.Application,[]}]
+    [
+      extra_applications: [:logger],
+      mod: {
+        Inmobiliaria.Application,
+        []
+      }
+    ]
+  end
 
+  defp deps do
+    []
   end
 end
