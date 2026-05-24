@@ -1,60 +1,24 @@
-defmodule Inmobiliaria.Persistencia do
+defmodule Inmobiliaria.Persistence do
+  @moduledoc """
+  Persistencia simple usando archivos de texto plano.
+  """
 
-  @archivo_propiedades "data/properties.dat"
-
-  def guardar_propiedad(propiedad) do
-
-    linea =
-      "#{propiedad.id};" <>
-        "#{propiedad.tipo};" <>
-        "#{propiedad.precio};" <>
-        "#{propiedad.disponibilidad}\n"
-
-    File.write!(@archivo_propiedades, linea, [:append])
+  def guardar_linea(archivo, linea) do
+    File.write!(
+      archivo,
+      linea <> "\n",
+      [:append]
+    )
   end
 
-  def leer_propiedades() do
-
-    if File.exists?(@archivo_propiedades) do
-
-      contenido = File.read!(@archivo_propiedades)
-      String.split(contenido, "\n", trim: true)
-      
+  def leer_lineas(archivo) do
+    if File.exists?(archivo) do
+      archivo
+      |> File.read!()
+      |> String.split("\n", trim: true)
     else
       []
     end
   end
-
-  def guardar_resultado(
-        cliente,
-        propiedad,
-        operacion
-      ) do
-    fecha = Date.utc_today()
-
-    linea =
-      "#{fecha};" <>
-        "cliente=#{cliente};" <>
-        "propiedad=#{propiedad.id};" <>
-        "operacion=#{operacion};" <>
-        "tipo=#{propiedad.tipo};" <>
-        "precio=#{propiedad.precio};" <>
-        "estado=#{propiedad.disponibilidad}\n"
-
-    File.write!("data/results.log", linea, [:append])
-  end
-
-  def guardar_usuario(usuario) do
-    linea =
-      "#{usuario.username};" <>
-        "#{usuario.password};" <>
-        "#{usuario.rol};" <>
-        "#{usuario.puntos}\n"
-
-    File.write!(
-      "data/users.dat",
-      linea,
-      [:append]
-    )
-  end
+  
 end

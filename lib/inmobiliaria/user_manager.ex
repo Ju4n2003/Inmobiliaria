@@ -15,14 +15,13 @@ defmodule Inmobiliaria.UserManager do
   Retorna el PID del proceso.
   """
   def start_link(_args) do
+    usuarios = cargar_usuarios()
+
     spawn(fn ->
-      loop(%{})
+      loop(usuarios)
     end)
     |> then(fn pid ->
-      Process.register(
-        pid,
-        __MODULE__
-      )
+      Process.register(pid, __MODULE__)
 
       {:ok, pid}
     end)
@@ -296,56 +295,36 @@ defmodule Inmobiliaria.UserManager do
   end
 
   defp cargar_usuarios() do
-    registros =
-      Inmobiliaria.Persistence.read_records(@users_file)
+    lineas =
+      Inmobiliaria.Persistence.leer_lineas("data/users.dat")
 
-    Enum.reduce(registros, %{}, fn r, acc ->
-      username = r["username"]
+    Enum.reduce(lineas, %{}, fn linea, acumulador ->
+      [username, role, password, score] =
+        String.split(linea, ";")
 
       usuario = %{
-        role: r["role"],
-        password: r["password"],
-        score: String.to_integer(r["score"] || "0")
+        role: role,
+        password: password,
+        score: String.to_integer(score)
       }
 
-      Map.put(acc, username, usuario)
+      Map.put(
+        acumulador,
+        username,
+        usuario
+      )
     end)
   end
 
   defp guardar_usuarios(usuarios) do
-    registros =
-      Enum.map(usuarios, fn {username, u} ->
-        %{
-          "username" => username,
-          "role" => u.role,
-          "password" => u.password,
-          "score" => "#{u.score}"
-        }
+    contenido =
+      usuarios
+      |> Enum.map(fn {username, usuario} ->
+        "#{username};#{usuario.role};#{usuario.password};#{usuario.score}"
       end)
+      |> Enum.join("\n")
 
-    Inmobiliaria.Persistence.write_records(
-      @users_file,
-      registros
-    )
+    File.write!("data/users.dat", contenido)
   end
-end
-
-defmodule Inmobiliaria.Persistence do
-  @moduledoc """
-  Módulo de persistencia básico para Inmobiliaria.
-
-  Define funciones simples de lectura y escritura de registros.
-  """
-
-  @doc """
-  Lee registros de usuarios desde un archivo.
-
-  Si el archivo no existe, retorna una lista vacía.
-  """
-  def read_records(_file), do: []
-
-  @doc """
-  Escribe registros de usuarios en un archivo.
-  """
-  def write_records(_file, _records), do: :ok
+  
 end
