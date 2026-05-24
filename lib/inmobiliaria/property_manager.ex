@@ -32,6 +32,27 @@ defmodule Inmobiliaria.PropertyManager do
     GenServer.call(pid_manager, :listar_propiedades)
   end
 
+  def filtrar_tipo(pid_manager, tipo) do
+    GenServer.call(
+      pid_manager,
+      {:filtrar_tipo, tipo}
+    )
+  end
+
+  def filtrar_ubicacion(pid_manager, ubicacion) do
+    GenServer.call(
+      pid_manager,
+      {:filtrar_ubicacion, ubicacion}
+    )
+  end
+
+  def filtrar_modalidad(pid_manager, modalidad) do
+    GenServer.call(
+      pid_manager,
+      {:filtrar_modalidad, modalidad}
+    )
+  end
+
   def handle_cast({:crear_propiedad, datos_propiedad}, estado) do
     id_propiedad = "prop00#{estado.contador}"
 
@@ -43,7 +64,10 @@ defmodule Inmobiliaria.PropertyManager do
 
     case resultado do
       {:ok, pid_propiedad} ->
-        Inmobiliaria.Persistencia.guardar_propiedad(propiedad_completa)
+        Inmobiliaria.Persistence.guardar_linea(
+          "data/properties.dat",
+          "#{id_propiedad};#{propiedad_completa.tipo};#{propiedad_completa.modalidad};#{propiedad_completa.ubicacion};#{propiedad_completa.precio};#{propiedad_completa.habitaciones};#{propiedad_completa.area};#{propiedad_completa.estado};#{propiedad_completa.propietario}"
+        )
 
         nuevas_propiedades =
           Map.put(
@@ -78,5 +102,50 @@ defmodule Inmobiliaria.PropertyManager do
 
   def handle_call(:listar_propiedades, _from, estado) do
     {:reply, estado.propiedades, estado}
+  end
+
+  def handle_call({:filtrar_tipo, tipo}, _from, estado) do
+    filtradas =
+      Enum.filter(
+        estado.propiedades,
+        fn {_id, pid_propiedad} ->
+          propiedad =
+            Inmobiliaria.Propiedad.obtener_estado(pid_propiedad)
+
+          propiedad.tipo == tipo
+        end
+      )
+
+    {:reply, filtradas, estado}
+  end
+
+  def handle_call({:filtrar_ubicacion, ubicacion}, _from, estado) do
+    filtradas =
+      Enum.filter(
+        estado.propiedades,
+        fn {_id, pid_propiedad} ->
+          propiedad =
+            Inmobiliaria.Propiedad.obtener_estado(pid_propiedad)
+
+          propiedad.ubicacion == ubicacion
+        end
+      )
+
+    {:reply, filtradas, estado}
+  end
+
+  def handle_call({:filtrar_modalidad, modalidad}, _from, estado) do
+    filtradas =
+      Enum.filter(
+        estado.propiedades,
+        fn {_id, pid_propiedad} ->
+          propiedad =
+            Inmobiliaria.Propiedad.obtener_estado(pid_propiedad)
+
+          propiedad.modalidad == modalidad
+        end
+      )
+
+    {:reply, filtradas, estado}
   end
 end

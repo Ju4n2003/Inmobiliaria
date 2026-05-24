@@ -1,4 +1,3 @@
-2026-05-24;cliente=ana;propiedad=prop001;operacion=compra;tipo=casa;precio=300000000;estado=vendida
-2026-05-24;cliente=ana;propiedad=prop001;operacion=compra;tipo=casa;precio=300000000;estado=vendida
-2026-05-24;cliente=ana;propiedad=prop001;operacion=compra;tipo=casa;precio=300000000;estado=vendida
-2026-05-24;cliente=ana;propiedad=prop002;operacion=compra;tipo=casa;precio=300000000;estado=vendida
+
+2026-05-24;cliente=ana;responsable=carlos;propiedad=prop001;operacion=compra;ubicacion=armenia;precio=500000000;estado=vendida
+2026-05-24;cliente=ana;responsable=carlos;propiedad=prop002;operacion=compra;ubicacion=bogota;precio=900000000;estado=vendida
