@@ -14,10 +14,18 @@ defmodule Inmobiliaria.UserManager do
   Carga los usuarios existentes desde disco y arranca el bucle de recepción.
   Retorna el PID del proceso.
   """
-  def iniciar() do
-    usuarios = cargar_usuarios()
+  def start_link(_args) do
+    spawn(fn ->
+      loop(%{})
+    end)
+    |> then(fn pid ->
+      Process.register(
+        pid,
+        __MODULE__
+      )
 
-    spawn(fn -> loop(usuarios) end)
+      {:ok, pid}
+    end)
   end
 
   @doc """
