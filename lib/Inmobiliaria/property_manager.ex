@@ -1,7 +1,7 @@
+defmodule Inmobiliaria.PropertyManager do
 @moduledoc """
 Módulo administrador: guardar propiedades, buscar propiedades, listar propiedades
 """
-defmodule Inmobiliaria.PropertyManager do
 
   #función para iniciarel Manager
   def iniciar() do

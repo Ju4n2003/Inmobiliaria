@@ -25,4 +25,3 @@ defmodule Inmobiliaria.Persistencia do
     end
   end
 end
-
