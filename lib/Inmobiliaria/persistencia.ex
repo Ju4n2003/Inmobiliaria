@@ -1,5 +1,5 @@
 defmodule Inmobiliaria.Persistencia do
-  
+
   @archivo_propiedades "data/properties.dat"
 
   def guardar_propiedad(propiedad) do
@@ -19,7 +19,7 @@ defmodule Inmobiliaria.Persistencia do
 
       contenido = File.read!(@archivo_propiedades)
       String.split(contenido, "\n", trim: true)
-
+      
     else
       []
     end
@@ -42,5 +42,19 @@ defmodule Inmobiliaria.Persistencia do
         "estado=#{propiedad.disponibilidad}\n"
 
     File.write!("data/results.log", linea, [:append])
+  end
+
+  def guardar_usuario(usuario) do
+    linea =
+      "#{usuario.username};" <>
+        "#{usuario.password};" <>
+        "#{usuario.rol};" <>
+        "#{usuario.puntos}\n"
+
+    File.write!(
+      "data/users.dat",
+      linea,
+      [:append]
+    )
   end
 end

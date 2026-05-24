@@ -1,112 +1,107 @@
 defmodule Inmobiliaria.Server do
-@moduledoc """
-será el módulo principal del sistema
-este será la consola, el punto central y el lugar donde llegan los comandos
-"""
 
-@doc """
-Función para arrancar el sistema
-"""
   def iniciar() do
 
-    #Aquí incia el PopertyManager
-    #crea el proceso administrador de propiedades
-    #devuelve el pid del manager ejemplo: #PID<0.145.0>
-    pid_manager = Inmobiliaria.PropertyManager.iniciar()
-    IO.puts("Servidor iniciado")
-    loop(pid_manager) #comienza el ciclo infinito del servidor
-    #se le pasa el pid del manager, porque el server necesitará usarlo todo el tiempo
+    pid_property_manager = Process.whereis(Inmobiliaria.PropertyManager)
+    pid_user_manager = Process.whereis(Inmobiliaria.UserManager)
 
+    estado = %{property_manager: pid_property_manager,user_manager: pid_user_manager,usuario_actual: nil}
+
+    IO.puts("Servidor iniciado")
+    loop(estado)
   end
 
-  @doc """
-  Función que representa la vida completa del servidor, aquí se reciben los comandos y se ejecutan las acciones correspondientes
-   - crear: crea una propiedad con datos predefinidos
-   - listar: muestra todas las propiedades registradas
-   - comprar: compra la propiedad prop001 por el cliente "ana"
-   - estado: muestra el estado actual de la propiedad prop001
-   - salir: finaliza el servidor
-  """
+  def loop(estado) do
+    comando =
+      IO.gets(">> ")
+      |> String.trim()
 
-  def loop(pid_manager) do
-    comando = IO.gets(">> ") #espera la entrada del usuario
-    # el IO.gets retorna: un string con salto de línea incluido
-    case String.trim(comando) do
+    partes = String.split(comando, " ")
 
-      "crear" ->
+    case partes do
+      ["connect", username, password, rol] ->
+        respuesta =
+          Inmobiliaria.UserManager.conectar(estado.user_manager, username, password, rol)
 
-        propiedad =
-        %{tipo: "casa",
-        precio: 300000000,
-        disponibilidad: "disponible"}
+        IO.puts(respuesta)
 
-        Inmobiliaria.PropertyManager.crear_propiedad(pid_manager,propiedad)
+        nuevo_estado = %{estado | usuario_actual: username}
+        loop(nuevo_estado)
 
-        loop(pid_manager)
+      ["crear"] ->
+        if estado.usuario_actual != nil do
+          propiedad = %{
+            tipo: "casa",
+            precio: 300_000_000,
+            disponibilidad: "disponible",
+            propietario: estado.usuario_actual
+          }
 
-      "listar" ->
+          Inmobiliaria.PropertyManager.crear_propiedad(estado.property_manager, propiedad)
+        else
+          IO.puts("Debe iniciar sesión")
+        end
 
-        propiedades = Inmobiliaria.PropertyManager.listar_propiedades(pid_manager)
-        
+        loop(estado)
+
+      ["listar"] ->
+        propiedades = Inmobiliaria.PropertyManager.listar_propiedades(estado.property_manager)
+
         Enum.each(propiedades, fn {id, pid_propiedad} ->
-          estado = Inmobiliaria.Propiedad.obtener_estado(pid_propiedad)
+          propiedad = Inmobiliaria.Propiedad.obtener_estado(pid_propiedad)
 
           IO.puts("""
+          -------------------------
           ID: #{id}
-          Tipo: #{estado.tipo}
-          Precio: #{estado.precio}
-          Estado: #{estado.disponibilidad}
+          Tipo: #{propiedad.tipo}
+          Precio: #{propiedad.precio}
+          Estado: #{propiedad.disponibilidad}
+          Propietario: #{propiedad.propietario}
+          -------------------------
           """)
         end)
 
-        loop(pid_manager)
+        loop(estado)
 
-      "comprar" ->
+      ["comprar", id_propiedad] ->
+        if estado.usuario_actual != nil do
+          pid_propiedad =
+            Inmobiliaria.PropertyManager.obtener_propiedad(estado.property_manager, id_propiedad)
 
-        id_propiedad =
-          IO.gets("ID propiedad: ")
-          |> String.trim()
+          if pid_propiedad != nil do
+            Inmobiliaria.Propiedad.comprar(pid_propiedad, estado.usuario_actual)
 
-        pid_propiedad = Inmobiliaria.PropertyManager.obtener_propiedad(pid_manager,id_propiedad)
-
-        if pid_propiedad != nil do
-
-          Inmobiliaria.Propiedad.comprar(pid_propiedad,"ana")
-
+            Inmobiliaria.UserManager.sumar_puntos(estado.user_manager, estado.usuario_actual, 10)
+          else
+            IO.puts("Propiedad no encontrada")
+          end
         else
-          IO.puts("Propiedad no encontrada")
+          IO.puts("Debe iniciar sesión")
         end
 
-        loop(pid_manager)
+        loop(estado)
 
-      "estado" ->
+      ["ranking"] ->
+        ranking =
+          Inmobiliaria.UserManager.ranking(estado.user_manager)
 
-        id_propiedad = IO.gets("ID propiedad: ")
-          |> String.trim()
+        Enum.each(ranking, fn usuario ->
+          IO.puts("""
+          Usuario: #{usuario.username}
+          Rol: #{usuario.rol}
+          Puntos: #{usuario.puntos}
+          -------------------------
+          """)
+        end)
 
-        pid_propiedad = Inmobiliaria.PropertyManager.obtener_propiedad(pid_manager,id_propiedad)
+        loop(estado)
 
-        if pid_propiedad != nil do
-
-          estado = Inmobiliaria.Propiedad.obtener_estado(pid_propiedad)
-          IO.inspect(estado)
-
-        else
-          IO.puts("Propiedad no encontrada")
-        end
-
-        loop(pid_manager)
-
-      "salir" -> #finaliza servidor
+      ["salir"] ->
         IO.puts("Servidor finalizado")
 
-      _ -> #este es el último caso, significa cualquir otra cosa
-      #cualquier otra cosa que no sea ninguna de las anteriores
-
-
+      _ ->
         IO.puts("Comando no válido")
-        loop(pid_manager) #si el comando no existe, el servidor sigue funcionando
-
+        loop(estado)
     end
   end
 end
