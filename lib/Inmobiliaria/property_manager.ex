@@ -3,84 +3,52 @@ defmodule Inmobiliaria.PropertyManager do
 Módulo administrador: guardar propiedades, buscar propiedades, listar propiedades
 """
 
-  #función para iniciarel Manager
+  use GenServer
+
   def iniciar() do
 
-    estado_inicial =
-      %{propiedades: %{},
-      contador: 1}
-
-    #Crea proceso concuerrente nuevo
-    spawn(fn -> loop(estado_inicial) end)
-    #el nuevo proceso ejecutará loop(estado_inicial) que es un mapa vacío
-    #el mapa vacío guardará las propiedades registradas
-    # %{"prop001" => #PID<0.145.0>,"prop002" => #PID<0.146.0>}
-    #el mapa es el estado interno del manager
+    GenServer.start_link(__MODULE__,%{propiedades: %{},contador: 1},name: __MODULE__)
   end
 
-  #Función pública para crear propiedades así:
-  #%{id: "prop001",tipo: "casa",precio: 300000000,disponibilidad: "disponible"}
-
+  def init(estado) do
+    {:ok, estado}
+  end
 
   def crear_propiedad(pid_manager, datos_propiedad) do
-    #send: envía un mensaje al manager:
-    #tipo: manager crea esta propiedad
-
-    send(pid_manager, {:crear_propiedad, datos_propiedad})
+    GenServer.cast(pid_manager,{:crear_propiedad, datos_propiedad})
   end
 
-  #Función pública para buscar propiedades
   def obtener_propiedad(pid_manager, id_propiedad) do
-    #send: manda mensaje tipo: dame la rpopiedad prop001 y responde a este proceso
-    send(pid_manager, {:obtener_propiedad, id_propiedad, self()})
-    #self: significa el proceso actuál "yo"
-    receive do #ahora esperamos respuesta
-      pid_propiedad -> pid_propiedad #cuando llega el pid lo duardamos y retornamos
-      #aquí no recibimos el mapa como tal, recibimos el pid del proceso que nos indica que está "vivo"
-      #porque la propiedad vive en otro proceso y necesitamos hablar con ese proceso
-    end
+    GenServer.call(pid_manager,{:obtener_propiedad, id_propiedad})
   end
 
-  #función pública para listar TODAS las propiedades
   def listar_propiedades(pid_manager) do
-    #lsend: le dice al manager que le mande todas las propiedades
-    send(pid_manager, {:listar_propiedades, self()})
-
-    #esperamos el mapa completo
-    #ejemplo: %{"prop001" => #PID<0.145.0>,"prop002" => #PID<0.146.0>
-
-    receive do
-      propiedades -> propiedades
-    end
+    GenServer.call(pid_manager,:listar_propiedades)
   end
 
-  #este es el corazón, aquí vive el estado manager, contiene el mapa global de propiedades
-  def loop(estado) do
+  def handle_cast({:crear_propiedad, datos_propiedad},estado) do
 
-    receive do
+    id_propiedad = "prop00#{estado.contador}"
+    propiedad_completa = Map.put(datos_propiedad,:id,id_propiedad)
 
-      {:crear_propiedad, datos_propiedad} ->
+    {:ok, pid_propiedad} = Inmobiliaria.Supervisor.iniciar_propiedad(propiedad_completa)
 
-        id_propiedad = "prop00#{estado.contador}"
-        datos_completos = Map.put(datos_propiedad,:id,id_propiedad)
-        pid_propiedad = Inmobiliaria.Propiedad.iniciar(datos_completos)
-        nuevas_propiedades = Map.put(estado.propiedades,id_propiedad,pid_propiedad)
-        nuevo_estado = %{propiedades: nuevas_propiedades,contador: estado.contador + 1}
+    Inmobiliaria.Persistencia.guardar_propiedad(propiedad_completa)
 
-        IO.puts("Propiedad #{id_propiedad} registrada")
-        loop(nuevo_estado)
+    nuevas_propiedades = Map.put(estado.propiedades,id_propiedad,pid_propiedad)
+    nuevo_estado = %{propiedades: nuevas_propiedades,contador: estado.contador + 1}
 
-      {:obtener_propiedad, id_propiedad, remitente} ->
+    IO.puts("Propiedad #{id_propiedad} registrada")
 
-        pid_propiedad = Map.get(estado.propiedades,id_propiedad)
-        send(remitente, pid_propiedad)
-        loop(estado)
+    {:noreply, nuevo_estado}
+  end
 
-      {:listar_propiedades, remitente} ->
+  def handle_call({:obtener_propiedad, id_propiedad},_from,estado) do
+    pid_propiedad = Map.get(estado.propiedades,id_propiedad)
+    {:reply, pid_propiedad, estado}
+  end
 
-        send(remitente,estado.propiedades)
-        loop(estado)
-
-    end
+  def handle_call(:listar_propiedades,_from,estado) do
+    {:reply, estado.propiedades, estado}
   end
 end
