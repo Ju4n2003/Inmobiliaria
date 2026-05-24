@@ -1,4 +1,7 @@
 defmodule Inmobiliaria.PropertyManager do
+@moduledoc """
+Módulo administrador: guardar propiedades, buscar propiedades, listar propiedades
+"""
 
   use GenServer
 
