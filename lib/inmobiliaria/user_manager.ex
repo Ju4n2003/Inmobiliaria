@@ -5,9 +5,7 @@ defmodule Inmobiliaria.UserManager do
   Este módulo ejecuta un proceso que mantiene en memoria un mapa de usuarios y
   persiste los datos de usuario en `users.dat`.
   """
-
-  @users_file "users.dat"
-
+  
   @doc """
   Inicia el proceso gestor de usuarios.
 
@@ -326,5 +324,5 @@ defmodule Inmobiliaria.UserManager do
 
     File.write!("data/users.dat", contenido)
   end
-  
+
 end
