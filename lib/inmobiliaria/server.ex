@@ -40,17 +40,27 @@ defmodule Inmobiliaria.Server do
 
       ["crear"] ->
         if estado.usuario_actual != nil do
-          propiedad = %{
-            tipo: "casa",
-            precio: 300_000_000,
-            disponibilidad: "disponible",
-            propietario: estado.usuario_actual
-          }
+          usuario =
+            Inmobiliaria.UserManager.obtener_usuario(
+              estado.user_manager,
+              estado.usuario_actual
+            )
 
-          Inmobiliaria.PropertyManager.crear_propiedad(
-            estado.property_manager,
-            propiedad
-          )
+          if usuario.role == "vendedor" or usuario.role == "arrendador" do
+            propiedad = %{
+              tipo: "casa",
+              precio: 300_000_000,
+              disponibilidad: "disponible",
+              propietario: estado.usuario_actual
+            }
+
+            Inmobiliaria.PropertyManager.crear_propiedad(
+              estado.property_manager,
+              propiedad
+            )
+          else
+            IO.puts("Solo vendedores o arrendadores pueden publicar propiedades")
+          end
         else
           IO.puts("Debe iniciar sesión")
         end
