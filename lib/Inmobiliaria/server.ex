@@ -1,11 +1,15 @@
 defmodule Inmobiliaria.Server do
 
   def iniciar() do
-
+    
     pid_property_manager = Process.whereis(Inmobiliaria.PropertyManager)
     pid_user_manager = Process.whereis(Inmobiliaria.UserManager)
 
-    estado = %{property_manager: pid_property_manager,user_manager: pid_user_manager,usuario_actual: nil}
+    estado = %{
+      property_manager: pid_property_manager,
+      user_manager: pid_user_manager,
+      usuario_actual: nil
+    }
 
     IO.puts("Servidor iniciado")
     loop(estado)
@@ -20,8 +24,7 @@ defmodule Inmobiliaria.Server do
 
     case partes do
       ["connect", username, password, rol] ->
-        respuesta =
-          Inmobiliaria.UserManager.conectar(estado.user_manager, username, password, rol)
+        respuesta = Inmobiliaria.UserManager.conectar(estado.user_manager, username, password, rol)
 
         IO.puts(respuesta)
 
@@ -65,8 +68,7 @@ defmodule Inmobiliaria.Server do
 
       ["comprar", id_propiedad] ->
         if estado.usuario_actual != nil do
-          pid_propiedad =
-            Inmobiliaria.PropertyManager.obtener_propiedad(estado.property_manager, id_propiedad)
+          pid_propiedad = Inmobiliaria.PropertyManager.obtener_propiedad(estado.property_manager, id_propiedad)
 
           if pid_propiedad != nil do
             Inmobiliaria.Propiedad.comprar(pid_propiedad, estado.usuario_actual)
@@ -81,9 +83,35 @@ defmodule Inmobiliaria.Server do
 
         loop(estado)
 
+      ["mensaje", propiedad_id | resto_mensaje] ->
+        if estado.usuario_actual != nil do
+          mensaje =
+            Enum.join(
+              resto_mensaje,
+              " "
+            )
+
+          Inmobiliaria.MessageManager.enviar_mensaje(propiedad_id,estado.usuario_actual,mensaje)
+        else
+          IO.puts("Debe iniciar sesión")
+        end
+
+        loop(estado)
+
+      ["ver_mensajes"] ->
+        mensajes = Inmobiliaria.MessageManager.ver_mensajes()
+
+        Enum.each(mensajes, fn mensaje ->
+          IO.puts("""
+          #{mensaje}
+          -------------------------
+          """)
+        end)
+
+        loop(estado)
+
       ["ranking"] ->
-        ranking =
-          Inmobiliaria.UserManager.ranking(estado.user_manager)
+        ranking = Inmobiliaria.UserManager.ranking(estado.user_manager)
 
         Enum.each(ranking, fn usuario ->
           IO.puts("""
