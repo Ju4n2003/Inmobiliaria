@@ -5,7 +5,7 @@ defmodule Inmobiliaria.UserManager do
   Este módulo ejecuta un proceso que mantiene en memoria un mapa de usuarios y
   persiste los datos de usuario en `users.dat`.
   """
-  
+
   @doc """
   Inicia el proceso gestor de usuarios.
 
@@ -293,26 +293,29 @@ defmodule Inmobiliaria.UserManager do
   end
 
   defp cargar_usuarios() do
-    lineas =
-      Inmobiliaria.Persistence.leer_lineas("data/users.dat")
+  lineas =
+    Inmobiliaria.Persistence.leer_lineas("data/users.dat")
 
-    Enum.reduce(lineas, %{}, fn linea, acumulador ->
-      [username, role, password, score] =
-        String.split(linea, ";")
+  Enum.reduce(lineas, %{}, fn linea, acumulador ->
+    [username, role, password, score] =
+      String.split(linea, ";")
 
-      usuario = %{
-        role: role,
-        password: password,
-        score: String.to_integer(score)
-      }
+    usuario = %{
+      role: String.trim(role),
+      password: String.trim(password),
+      score:
+        score
+        |> String.trim()
+        |> String.to_integer()
+    }
 
-      Map.put(
-        acumulador,
-        username,
-        usuario
-      )
-    end)
-  end
+    Map.put(
+      acumulador,
+      String.trim(username),
+      usuario
+    )
+  end)
+end
 
   defp guardar_usuarios(usuarios) do
     contenido =
