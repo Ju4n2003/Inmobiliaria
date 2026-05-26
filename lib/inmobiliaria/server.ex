@@ -336,7 +336,7 @@ defmodule Inmobiliaria.Server do
       # ......................
       #   FILTRAR MODALIDAD
       # ......................
-      
+
       ["filtrar_modalidad", modalidad] ->
         propiedades =
           Inmobiliaria.PropertyManager.filtrar_modalidad(
@@ -601,44 +601,122 @@ defmodule Inmobiliaria.Server do
       ["ayuda"] ->
         IO.puts("""
 
-        COMANDOS DISPONIBLES
+        ==========================================
+               SISTEMA INMOBILIARIA - AYUDA
+        ==========================================
 
+        AUTENTICACIÓN
+        ------------------------------------------
         connect usuario password rol
+          Inicia sesión o registra un usuario.
 
+          Roles disponibles:
+            cliente
+            vendedor
+            arrendador
+
+          Ejemplo:
+            connect juan 123 cliente
+
+
+        PROPIEDADES
+        ------------------------------------------
         crear tipo modalidad ubicacion precio habitaciones area
+          Publica una propiedad.
 
+          Modalidades:
+            venta
+            arriendo
+
+          Ejemplo:
+            crear casa venta armenia 250000000 4 120
+            crear apartamento arriendo bogota 1800000 2 80
+
+
+        CONSULTAS
+        ------------------------------------------
         listar
+          Lista todas las propiedades
 
+        listar disponibles
+          Lista solo propiedades disponibles
+
+        filtrar_tipo tipo
+          Filtra propiedades por tipo
+
+          Ejemplo:
+            filtrar_tipo casa
+
+        filtrar_ubicacion ciudad
+          Filtra propiedades por ubicación
+
+          Ejemplo:
+            filtrar_ubicacion armenia
+
+        filtrar_modalidad modalidad
+          Filtra propiedades por modalidad
+
+          Ejemplo:
+            filtrar_modalidad venta
+
+        filtrar_precio minimo maximo
+          Filtra propiedades por rango de precio
+
+          Ejemplo:
+            filtrar_precio 100000000 300000000
+
+
+        OPERACIONES
+        ------------------------------------------
         comprar id_propiedad
+          Compra una propiedad
+
+          Ejemplo:
+            comprar prop001
 
         arrendar id_propiedad
+          Arrienda una propiedad
 
+          Ejemplo:
+            arrendar prop002
+
+
+        MENSAJES
+        ------------------------------------------
         mensaje id_propiedad texto
+          Envía un mensaje sobre una propiedad
+
+          Ejemplo:
+            mensaje prop001 Hola estoy interesado
 
         ver_mensajes
+          Muestra los mensajes almacenados
 
+
+        RANKING
+        ------------------------------------------
         ranking
+          Muestra ranking general de usuarios
 
-        filtrar_tipo casa
+        ranking_rol rol
+          Muestra ranking por rol
 
-        filtrar_ubicacion armenia
+          Ejemplo:
+            ranking_rol vendedor
 
-        filtrar_modalidad venta
-
+        SESIÓN
+        ------------------------------------------
         desconectar
+          Cierra sesión actual
 
         salir
+          Finaliza el servidor
+
+        ==========================================
 
         """)
 
         loop(estado)
-
-      # ......................
-      #         SALIR
-      # ......................
-
-      ["salir"] ->
-        IO.puts("Servidor finalizado")
 
       # ......................
       #         ERROR

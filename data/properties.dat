@@ -25,3 +25,5 @@ prop001;casa;venta;armenia;500000000;4;125;disponible;carlos
 prop002;hacienda;venta;bogota;900000000;3;116;disponible;carlos
 prop001;casa;venta;armenia;500000000;4;125;disponible;carlos
 prop002;hacienda;venta;bogota;900000000;3;116;disponible;carlos
+prop001;casa;venta;armenia;250000000;4;150;disponible;carlos
+prop002;apartamento;arriendo;cali;1800000000;2;80;disponible;pedro

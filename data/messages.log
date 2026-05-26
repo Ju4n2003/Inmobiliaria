@@ -32,3 +32,7 @@ prop002;juan;
 prop002;juan;
 2026-05-25;propiedad=prop002;usuario=juan;mensaje=hola tu
 prop002;juan;hola tu
+2026-05-26;propiedad=prop001;usuario=maria;mensaje=Hola estoy interesado
+prop001;maria;Hola estoy interesado
+2026-05-26;propiedad=prop002;usuario=juan;mensaje=25/05/26, Cuanto vale el arriendo
+prop002;juan;25/05/26, Cuanto vale el arriendo

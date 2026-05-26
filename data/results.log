@@ -5,3 +5,5 @@
 2026-05-25;cliente=juan;responsable=carlos;propiedad=prop001;operacion=compra;ubicacion=armenia;precio=23000000;status=Completada
 2026-05-25;cliente=juan;responsable=carlos;propiedad=prop001;operacion=compra;ubicacion=armenia;precio=324444;estado=vendida
 2026-05-25;cliente=juan;responsable=carlos;propiedad=prop001;operacion=compra;ubicacion=armenia;precio=324444;status=Completada
+2026-05-26;cliente=juan;responsable=carlos;propiedad=prop001;operacion=compra;ubicacion=armenia;precio=250000000;estado=vendida
+2026-05-26;cliente=juan;responsable=carlos;propiedad=prop001;operacion=compra;ubicacion=armenia;precio=250000000;status=Completada
